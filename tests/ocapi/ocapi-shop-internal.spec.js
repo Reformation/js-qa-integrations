@@ -3,7 +3,6 @@ const path = require('path');
 const assert = require('assert');
 
 const REFLogger = require('../../util/ref-logger.js');
-
 const OcapiShopClient = require('../../sfcc/ocapi/shop-api/ocapi-shop-client');
 
 test.describe('OCAPI Internal Shop API Tests', () => {

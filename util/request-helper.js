@@ -1,5 +1,6 @@
-const axios = require('axios')
-const path = require('path');   
+const axios = require('axios');
+const path = require('path');
+
 const REFLogger = require('./ref-logger');
 
 function sendRequest({url, accessToken, payload, type, isForm, contentType, suppressError}) {

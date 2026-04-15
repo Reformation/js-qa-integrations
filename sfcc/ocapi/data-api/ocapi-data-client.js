@@ -1,11 +1,9 @@
 const path = require('path');
 
 const REFLogger = require('../../../util/ref-logger');
-
-const OcapiDataEnvironment = require('../data-api/util/ocapi-data-env');
-const OcapiDataAuthorization = require('../data-api/util/ocapi-data-auth');
-
 const HttpRequestHelper = require('../../../util/http-request-helper');
+const OcapiDataEnvironment = require('./util/ocapi-data-env');
+const OcapiDataAuthorization = require('./util/ocapi-data-auth');
 
 class OcapiDataClient {
     constructor(env_str = process.env.ENV_HOST, apiVersion = 'v21_3') {

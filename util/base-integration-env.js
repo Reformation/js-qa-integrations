@@ -1,4 +1,5 @@
 const process = require('process');
+
 const EnvVarLoader = require('./env-var-loader');
 
 class BaseIntegrationEnv {

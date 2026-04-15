@@ -1,9 +1,10 @@
 const path = require('path');
+
 const REFLogger = require('../util/ref-logger');
-const DeposcoEnvironment = require('./util/deposco-env');
-const DeposcoAuthorization = require('./util//deposco-auth');
 const HttpRequestHelper = require('../util/http-request-helper');
-const XmlResponseParser = require('../deposco/util/xml-response-parser');
+const DeposcoEnvironment = require('./util/deposco-env');
+const DeposcoAuthorization = require('./util/deposco-auth');
+const XmlResponseParser = require('./util/xml-response-parser');
 
 class DeposcoApiShipment {
     constructor(env_str = process.env.ENV_HOST) {

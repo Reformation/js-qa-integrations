@@ -1,11 +1,9 @@
 const path = require('path');
 
 const REFLogger = require('../../util/ref-logger');
-
+const HttpRequestHelper = require('../../util/http-request-helper');
 const ScapiEnvironment = require('./util/scapi-env');
 const ScapiAuthorization = require('./util/scapi-auth');
-
-const HttpRequestHelper = require('../../util/http-request-helper');
 
 class ScapiInventoryClient {
     constructor(env_str = process.env.ENV_HOST) {

@@ -1,4 +1,5 @@
 const xml2js = require('xml2js');
+
 const REFLogger = require('../../util/ref-logger');
 
 class XmlResponseParser {

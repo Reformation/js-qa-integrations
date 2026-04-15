@@ -1,9 +1,10 @@
 const path = require('path');
+
 const REFLogger = require('../../../util/ref-logger');
+const HttpRequestHelper = require('../../../util/http-request-helper');
 const OcapiShopEnvironment = require('./util/ocapi-shop-env');
 const OcapiShopAuthorization = require('./util/ocapi-shop-auth');
-const HttpRequestHelper = require('../../../util/http-request-helper');
-const OcapiShopBasket = require('./util/ocapi-shop-basket.js');
+const OcapiShopBasket = require('./util/ocapi-shop-basket');
 
 class OcapiShopClient {
     constructor(env_str = process.env.ENV_HOST, apiVersion = 'v21_3', options = {}) {

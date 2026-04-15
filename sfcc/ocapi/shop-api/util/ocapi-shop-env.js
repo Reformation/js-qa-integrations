@@ -1,4 +1,5 @@
 const process = require('process');
+
 const SfccEnvironment = require('../../../sfcc-env');
 
 class OcapiShopEnvironment extends SfccEnvironment {
