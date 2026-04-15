@@ -5,6 +5,7 @@ module.exports.EnvVarLoader          = require('./util/env-var-loader');
 module.exports.BaseIntegrationEnv    = require('./util/base-integration-env');
 module.exports.HttpRequestHelper     = require('./util/http-request-helper');
 module.exports.REFLogger             = require('./util/ref-logger');
+module.exports.OcapiHelper           = require('./util/ocapi-helper');
 
 // SFCC
 module.exports.SfccEnvironment       = require('./sfcc/sfcc-env');
