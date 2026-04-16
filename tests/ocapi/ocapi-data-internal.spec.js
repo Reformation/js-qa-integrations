@@ -6,6 +6,7 @@ const assert = require('assert');
 
 const REFLogger = require('../../util/ref-logger.js');
 const OcapiDataClient = require('../../sfcc/ocapi/data-api/ocapi-data-client');
+const testData = require('../fixtures/test-data.json');
 
 
 test.describe('OCAPI Internal Data API Tests', () => {
@@ -16,7 +17,7 @@ test.describe('OCAPI Internal Data API Tests', () => {
         refLogger.info('DATA API quick inventory lookup - no inventory exists');
 
         const ocapiDataClient = new OcapiDataClient();
-        const sku = '1313793IVO008';
+        const sku = testData.ocapi.inventory.sku;
         const inventory = await ocapiDataClient.getInventoryForSku(sku);
         refLogger.debug(`Inventory Record: ${JSON.stringify(inventory)}`);
         expect(inventory).not.toBeNull();

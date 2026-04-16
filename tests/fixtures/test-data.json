@@ -1,0 +1,15 @@
+{
+  "ocapi": {
+    "orders": {
+      "gleOrderNumber": "GE10832129972CA",
+      "usOrderNumber": "SD00815506",
+      "expectedSfccOrderNumber": "SD00118126"
+    },
+    "inventory": {
+      "sku": "1313793IVO008"
+    },
+    "baskets": {
+      "nonexistentBasketId": "1234567890"
+    }
+  }
+}

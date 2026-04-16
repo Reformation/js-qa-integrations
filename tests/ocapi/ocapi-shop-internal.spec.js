@@ -6,6 +6,8 @@ const assert = require('assert');
 
 const REFLogger = require('../../util/ref-logger.js');
 const OcapiShopClient = require('../../sfcc/ocapi/shop-api/ocapi-shop-client');
+const SfccClient = require('../../sfcc/sfcc-client');
+const testData = require('../fixtures/test-data.json');
 
 test.describe('OCAPI Internal Shop API Tests', () => {
     let loggerName = path.basename(__filename, path.extname(__filename));
@@ -15,7 +17,7 @@ test.describe('OCAPI Internal Shop API Tests', () => {
         refLogger.info('SHOP API quick basket lookup - no basket exists');
 
         const ocapiShopClient = new OcapiShopClient();
-        const basketId = '1234567890';
+        const basketId = testData.ocapi.baskets.nonexistentBasketId;
         const basket = await ocapiShopClient.getBasketByBasketId(basketId);
         refLogger.info(`Basket: ${JSON.stringify(basket)}`);
         expect(basket).toBeNull();
@@ -27,7 +29,7 @@ test.describe('OCAPI Internal Shop API Tests', () => {
         refLogger.info('SHOP API order lookup by order number');
 
         const ocapiShopClient = new OcapiShopClient();
-        const orderNumber = 'GE10832129972CA';
+        const orderNumber = testData.ocapi.orders.gleOrderNumber;
         const order = await ocapiShopClient.getOrderByOrderNumber(orderNumber);
         
         refLogger.info(`Order response: ${JSON.stringify(order)}`);
@@ -43,7 +45,7 @@ test.describe('OCAPI Internal Shop API Tests', () => {
         refLogger.info('SHOP API order lookup by order number');
 
         const ocapiShopClient = new OcapiShopClient();
-        const orderNumber = 'SD00815506';
+        const orderNumber = testData.ocapi.orders.usOrderNumber;
         const order = await ocapiShopClient.getOrderByOrderNumber(orderNumber);
         
         refLogger.info(`Order response: ${JSON.stringify(order)}`);
@@ -60,14 +62,14 @@ test.describe('OCAPI Internal Shop API Tests', () => {
         refLogger.info('SHOP API order lookup by order number');
 
         const ocapiShopClient = new OcapiShopClient();
-        const gleOrderNumber = 'GE10832129972CA';
+        const gleOrderNumber = testData.ocapi.orders.gleOrderNumber;
         const sfccOrderNumber = await ocapiShopClient.getSfccOrderNumberByGLEOrderNumber(gleOrderNumber);
         
         refLogger.info(`Order response: ${JSON.stringify(sfccOrderNumber)}`);
         
         // Validate order was retrieved
         expect(sfccOrderNumber).not.toBeNull();
-        expect(sfccOrderNumber).toBe('SD00118126'); // This is the SFCC order number, not the GLE number
+        expect(sfccOrderNumber).toBe(testData.ocapi.orders.expectedSfccOrderNumber); // This is the SFCC order number, not the GLE number
         
         refLogger.info('SHOP API order lookup by order number - completed');
     });
@@ -75,8 +77,8 @@ test.describe('OCAPI Internal Shop API Tests', () => {
     test('Test get SFCC store list', async () => {
         refLogger.info('SHOP API store list retrieval');
 
-        const ocapiShopClient = new OcapiShopClient();
-        const sfccStoreList = await ocapiShopClient.getSfccStoreList();
+        const sfccClient = new SfccClient();
+        const sfccStoreList = await sfccClient.getStoreList();
         
         refLogger.info(`Order response: ${JSON.stringify(sfccStoreList)}`);
         
