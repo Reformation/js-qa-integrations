@@ -10,7 +10,7 @@ class BaseIntegrationEnv {
     validateEnvStr() {
         if (!this.envStr) {
             throw new Error(
-                "ENV_STR cannot be empty. It must be in the following format [ 004, 008, 025, DEV, STG ... ]."
+                "Environment cannot be empty. Set ENV_HOST in the following format [ 004, 008, 025, DEV, STG ... ]."
             );
         }
     }

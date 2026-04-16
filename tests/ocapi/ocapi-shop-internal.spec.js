@@ -1,3 +1,5 @@
+require('dotenv').config({ override: true });
+
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 const assert = require('assert');
@@ -41,7 +43,7 @@ test.describe('OCAPI Internal Shop API Tests', () => {
         refLogger.info('SHOP API order lookup by order number');
 
         const ocapiShopClient = new OcapiShopClient();
-        const orderNumber = 'SD00118128';
+        const orderNumber = 'SD00815506';
         const order = await ocapiShopClient.getOrderByOrderNumber(orderNumber);
         
         refLogger.info(`Order response: ${JSON.stringify(order)}`);

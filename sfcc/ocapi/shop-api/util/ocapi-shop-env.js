@@ -15,7 +15,7 @@ class OcapiShopEnvironment extends SfccEnvironment {
 
     setOcapiEnvVars() {
         if (!this.envStr) {
-            throw new Error("ENV_STR cannot be empty. It must be in the following format [ 004, 008, 025, DEV, STG ... ].");
+            throw new Error("ENV_HOST cannot be empty. It must be in the following format [ 004, 008, 025, DEV, STG ... ].");
         }
 
         super.setEnvVars();

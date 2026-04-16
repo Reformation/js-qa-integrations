@@ -10,7 +10,7 @@ class OcapiDataAuthorization {
         this.refLogger = new REFLogger(loggerName);
     }
     
-    getBase64Token(user, pass) {
+    #getBase64Token(user, pass) {
         if (!user || !pass) {
             throw new Error('User or password is missing');
         }
@@ -26,7 +26,7 @@ class OcapiDataAuthorization {
             grant_type: 'client_credentials'
         }
 
-        const basicAuth = this.getBase64Token(this.ocapiDataEnv.clientId, this.ocapiDataEnv.clientSecret);
+        const basicAuth = this.#getBase64Token(this.ocapiDataEnv.clientId, this.ocapiDataEnv.clientSecret);
 
         try {
             const ocapiRequestTemplate = new HttpRequestHelper();

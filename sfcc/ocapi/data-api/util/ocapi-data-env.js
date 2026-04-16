@@ -2,7 +2,8 @@ const process = require('process');
 const SfccEnvironment = require('../../../sfcc-env');
 
 class OcapiDataEnvironment extends SfccEnvironment {
-    super(envStr = process.env.ENV_HOST) {
+    constructor(envStr = process.env.ENV_HOST) {
+        super(envStr);
         this.envStr = envStr;
         this.clientId = '';
         this.clientSecret = '';
@@ -10,7 +11,7 @@ class OcapiDataEnvironment extends SfccEnvironment {
 
     setOcapiEnvVars() {
         if (!this.envStr) {
-            throw new Error("ENV_STR cannot be empty. It must be in the following format [ 004, 008, 025, DEV, STG ... ].");
+            throw new Error("Environment cannot be empty. Set ENV_HOST in the following format [ 004, 008, 025, DEV, STG ... ].");
         }
 
         super.setEnvVars();

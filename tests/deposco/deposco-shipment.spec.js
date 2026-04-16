@@ -1,3 +1,5 @@
+require('dotenv').config({ override: true });
+
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 const process = require('process');

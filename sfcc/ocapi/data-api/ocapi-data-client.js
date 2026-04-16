@@ -57,7 +57,7 @@ class OcapiDataClient {
              this.refLogger.info(`${groupName}.${preferenceId} returned a valid response ...`);
         } catch (error) {
             this.refLogger.error(`Error retrieving site preference [ ${preferenceId} ] from group [ ${groupName} ]: ${error?.message}`);
-            throw error;
+            //throw error;
         }
 
         return sitePrefObject;

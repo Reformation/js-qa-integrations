@@ -18,6 +18,13 @@ class OcapiShopClient {
         const loggerName = path.basename(__filename, path.extname(__filename));
         this.refLogger = new REFLogger(loggerName);
 
+        const clientId = this.ocapiShopEnv.clientId || '';
+        const clientIdPrefix = clientId ? clientId.substring(0, 8) : 'missing';
+        const clientIdLength = clientId.length;
+        this.refLogger.info(
+            `OcapiShopClient initialized - env [ ${this.env_str} ] host [ ${this.ocapiShopEnv.sfccHost} ] clientIdPrefix [ ${clientIdPrefix} ] clientIdLen [ ${clientIdLength} ]`
+        );
+
         this.ocapiShopAuth = new OcapiShopAuthorization(this.ocapiShopEnv, options);
         this.httpRequestHelper = new HttpRequestHelper();
 
@@ -33,22 +40,43 @@ class OcapiShopClient {
         this.cachedBearerTokenExpiresAtMs = 0;
     }
 
+    #isNotFoundError(error) {
+        return error?.response?.status === 404 || error?.message?.includes('404');
+    }
+
+    #handleNotFound(operation, identifier, error) {
+        if (this.#isNotFoundError(error)) {
+            this.refLogger.warn(`${operation} - object not found [ ${identifier} ] (404). Returning null.`);
+            return null;
+        }
+
+        throw error;
+    }
+
     async getBasketByBasketId(basketId) {
         this.refLogger.info(`Attempting to retrieve the SFCC basket via OCAPI for basket_id [ ${basketId} ]`);
 
-        const bearerToken = await this.ocapiShopAuth.getBearerToken();
-        const endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/baskets/${basketId}`;
+        try {
+            const bearerToken = await this.ocapiShopAuth.getBearerToken();
+            const endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/baskets/${basketId}`;
 
-        return await this.httpRequestHelper.performLookup({ auth: bearerToken, endpoint });
+            return await this.httpRequestHelper.performLookup({ auth: bearerToken, endpoint });
+        } catch (error) {
+            return this.#handleNotFound('getBasketByBasketId', basketId, error);
+        }
     }
 
     async getOrderByOrderNumber(orderNumber) {
         this.refLogger.info(`Attempting to retrieve the SFCC order via OCAPI for order_number [ ${orderNumber} ]`);
 
-        const bearerToken = await this.ocapiShopAuth.getBearerToken();
-        const endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/orders/${orderNumber}`;
+        try {
+            const bearerToken = await this.ocapiShopAuth.getBearerToken();
+            const endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/orders/${orderNumber}`;
 
-        return await this.httpRequestHelper.performLookup({ auth: bearerToken, endpoint });
+            return await this.httpRequestHelper.performLookup({ auth: bearerToken, endpoint });
+        } catch (error) {
+            return this.#handleNotFound('getOrderByOrderNumber', orderNumber, error);
+        }
     }
 
     async deleteBasket(basketId) {
@@ -64,47 +92,55 @@ class OcapiShopClient {
     async getSfccOrderNumberByGLEOrderNumber(orderNumber) {
         this.refLogger.info(`Attempting to retrieve the SFCC order via OCAPI for order_number [ ${orderNumber} ]`);
 
-        const bearerToken = await this.ocapiShopAuth.getBearerToken();
-        const endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/order_search`;
+        try {
+            const bearerToken = await this.ocapiShopAuth.getBearerToken();
+            const endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/order_search`;
 
-        const payload = {
-            "query": {
-                "text_query": {
-                    "fields": ["c_geOrderNumber"],
-                    "search_phrase": `${orderNumber}`
+            const payload = {
+                "query": {
+                    "text_query": {
+                        "fields": ["c_geOrderNumber"],
+                        "search_phrase": `${orderNumber}`
+                    }
                 }
+            };
+
+            this.refLogger.debug(`OCAPI endpoint for order retrieval by GLE order number: ${endpoint}`);
+            this.refLogger.debug(`OCAPI payload for order retrieval by GLE order number: ${JSON.stringify(payload)}`);
+
+            const response = await this.httpRequestHelper.performPost({
+                auth: bearerToken,
+                endpoint,
+                payload,
+                isForm: false,
+                contentType: 'application/json'
+            });
+
+            this.refLogger.info(`Order response: ${JSON.stringify(response)}`);
+
+            // Extract order_no from response
+            if (response?.data?.hits?.length > 0) {
+                return response.data.hits[0].data.order_no;
             }
-        };
 
-        this.refLogger.debug(`OCAPI endpoint for order retrieval by GLE order number: ${endpoint}`);
-        this.refLogger.debug(`OCAPI payload for order retrieval by GLE order number: ${JSON.stringify(payload)}`);
-
-        const response = await this.httpRequestHelper.performPost({
-            auth: bearerToken,
-            endpoint,
-            payload,
-            isForm: false,
-            contentType: 'application/json'
-        });
-
-        this.refLogger.info(`Order response: ${JSON.stringify(response)}`);
-
-        // Extract order_no from response
-        if (response?.data?.hits?.length > 0) {
-            return response.data.hits[0].data.order_no;
+            this.refLogger.warn(`No SFCC order found for GLE order number: ${orderNumber}`);
+            return null;
+        } catch (error) {
+            return this.#handleNotFound('getSfccOrderNumberByGLEOrderNumber', orderNumber, error);
         }
-
-        this.refLogger.warn(`No SFCC order found for GLE order number: ${orderNumber}`);
-        return null;
     }
 
     async getSfccStoreList() {
         this.refLogger.info('Attempting to retrieve the SFCC store list via OCAPI ...');
 
-        const bearerToken = await this.ocapiShopAuth.getBearerToken();
-        const endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/stores`;
+        try {
+            const bearerToken = await this.ocapiShopAuth.getBearerToken();
+            const endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/stores`;
 
-        return await this.httpRequestHelper.performLookup({ auth: bearerToken, endpoint });
+            return await this.httpRequestHelper.performLookup({ auth: bearerToken, endpoint });
+        } catch (error) {
+            return this.#handleNotFound('getSfccStoreList', 'stores', error);
+        }
     }
 
     async createBasket(iPayload) {
@@ -144,13 +180,17 @@ class OcapiShopClient {
     }
 
     async getBasket(basketId, optionalQuery) {
-        const bearerToken = await this.ocapiShopAuth.getBearerToken();
-        let endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/baskets/${basketId}`;
-        if (optionalQuery) {
-            endpoint += `?${optionalQuery}`;
-        }
+        try {
+            const bearerToken = await this.ocapiShopAuth.getBearerToken();
+            let endpoint = `${this.ocapiShopEnv.sfccHost}/s/reformation-us/dw/shop/${this.apiVersion}/baskets/${basketId}`;
+            if (optionalQuery) {
+                endpoint += `?${optionalQuery}`;
+            }
 
-        return await this.httpRequestHelper.performLookup({ auth: bearerToken, endpoint });
+            return await this.httpRequestHelper.performLookup({ auth: bearerToken, endpoint });
+        } catch (error) {
+            return this.#handleNotFound('getBasket', basketId, error);
+        }
     }
 
     async forceBasketHubCodes(basketId, countryCode = 'US') {

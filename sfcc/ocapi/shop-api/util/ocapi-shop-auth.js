@@ -39,8 +39,49 @@ class OcapiShopAuthorization {
 
     #getSfccBase64CombinedToken() {
         const combinedKey = `${this.ocapiShopEnv.ocapiUsername}:${this.ocapiShopEnv.ocapiTokenPassword}:${this.ocapiShopEnv.clientSecret}`;
-        const base64CombinedKeyString = Buffer.from(combinedKey, 'ascii').toString('base64');
+        const base64CombinedKeyString = Buffer.from(combinedKey, 'utf8').toString('base64');
         return base64CombinedKeyString;
+    }
+
+    #getSfccBase64ClientToken() {
+        const combinedKey = `${this.ocapiShopEnv.clientId}:${this.ocapiShopEnv.clientSecret}`;
+        return Buffer.from(combinedKey, 'utf8').toString('base64');
+    }
+
+    #getSfccBase64UserToken() {
+        const combinedKey = `${this.ocapiShopEnv.ocapiUsername}:${this.ocapiShopEnv.ocapiTokenPassword}`;
+        return Buffer.from(combinedKey, 'utf8').toString('base64');
+    }
+
+    #formatErrorDetails(error) {
+        const status = error?.response?.status;
+        const statusText = error?.response?.statusText;
+        const responseData = error?.response?.data;
+        const serializedData = responseData
+            ? (typeof responseData === 'string' ? responseData : JSON.stringify(responseData))
+            : '';
+
+        const statusDetails = [status, statusText].filter(Boolean).join(' ');
+        const details = [statusDetails, serializedData].filter(Boolean).join(' - ');
+
+        return details || error?.message || 'unknown error';
+    }
+
+    #buildAuthCandidates() {
+        return [
+            {
+                label: 'legacy user:token:clientSecret',
+                auth: this.#getSfccBase64CombinedToken()
+            },
+            {
+                label: 'clientId:clientSecret',
+                auth: this.#getSfccBase64ClientToken()
+            },
+            {
+                label: 'user:token',
+                auth: this.#getSfccBase64UserToken()
+            }
+        ];
     }
 
     #isCachedBearerTokenValid() {
@@ -59,16 +100,29 @@ class OcapiShopAuthorization {
             grant_type: 'urn:demandware:params:oauth:grant-type:client-id:dwsid:dwsecuretoken'
         }
 
-        try {
-            const combinedBase64Token = this.#getSfccBase64CombinedToken();
+        const httpRequestHelper = new HttpRequestHelper();
+        const authCandidates = this.#buildAuthCandidates();
+        const attemptErrors = [];
 
-            const httpRequestHelper = new HttpRequestHelper();
-            var response = await httpRequestHelper.performPost({auth:combinedBase64Token, endpoint, payload, isForm:true, contentType:'application/x-www-form-urlencoded'});
+        for (const candidate of authCandidates) {
+            try {
+                const response = await httpRequestHelper.performPost({
+                    auth: candidate.auth,
+                    endpoint,
+                    payload,
+                    isForm: true,
+                    contentType: 'application/x-www-form-urlencoded'
+                });
 
-            const responseJson = response.data;
+                const responseJson = response.data;
 
-            if (responseJson.access_token) {
-                this.refLogger.info('Successfully retrieved the OCAPI bearer access_token ...');
+                if (!responseJson.access_token) {
+                    this.refLogger.error('---------------- ERROR getSfccBearerToken RESPONSE ----------------------');
+                    this.refLogger.error(responseJson);
+                    throw new Error('Failed to retrieve OCAPI bearer token. Response does not contain access_token.');
+                }
+
+                this.refLogger.info(`Successfully retrieved the OCAPI bearer access_token via auth format [ ${candidate.label} ] ...`);
                 const authorizationHeader = `${responseJson.token_type} ${responseJson.access_token}`;
 
                 if (includeExpiration) {
@@ -83,15 +137,16 @@ class OcapiShopAuthorization {
                 }
 
                 return authorizationHeader;
-            } else {
-                this.refLogger.error('---------------- ERROR getSfccBearerToken RESPONSE ----------------------');
-                this.refLogger.error(responseJson);
-                throw new Error('Failed to retrieve OCAPI bearer token. Response does not contain access_token.');
+            } catch (error) {
+                const details = this.#formatErrorDetails(error);
+                attemptErrors.push(`[${candidate.label}] ${details}`);
+                this.refLogger.warn(`Bearer token request failed with auth format [ ${candidate.label} ]: ${details}`);
             }
-        } catch (error) {
-            this.refLogger.error('Error while fetching bearer token:', error.message);
-            throw new Error(`Error while fetching bearer token: ${error.message}`);
         }
+
+        const combinedErrorMessage = attemptErrors.join(' | ');
+        this.refLogger.error(`Error while fetching bearer token: ${combinedErrorMessage}`);
+        throw new Error(`Error while fetching bearer token: ${combinedErrorMessage}`);
     }
 }
 
