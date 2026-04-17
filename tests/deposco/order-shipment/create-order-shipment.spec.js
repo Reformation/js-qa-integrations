@@ -1,4 +1,4 @@
-require('dotenv').config({ override: true });
+import 'dotenv/config';
 
 const { test, expect } = require('@playwright/test');
 const path = require('path');
