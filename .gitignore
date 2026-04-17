@@ -1,3 +1,6 @@
 .env
 test-results/**/*.zip
 test-results/**/error-context.md
+test-results/.last-run.json
+node_modules/
+**/.package-lock.json
