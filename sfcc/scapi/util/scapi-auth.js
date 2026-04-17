@@ -22,7 +22,7 @@ class ScapiAuthorization {
     async getScapiToken() {
         const endpoint = 'https://account.demandware.com/dwsso/oauth2/access_token';
 
-        const scope = `SALESFORCE_COMMERCE_API:${this.scapiEnv.scapiOrgId} ${this.scapiEnv.scapiClientId}`;
+        const scope = `SALESFORCE_COMMERCE_API:${this.scapiEnv.scapiInstanceId} c_scapi_dev_tools`;
 
         const payload = {
             grant_type: 'client_credentials',
