@@ -2,6 +2,7 @@
 
 // SFCC (unified client wrapping OCAPI and SCAPI)
 module.exports.SfccClient      = require('./sfcc/sfcc-client');
+module.exports.SfccEnv = require('./sfcc/sfcc-env');
 
 // Deposco
 module.exports.DeposcoApiClient      = require('./deposco/deposco-api-client');
