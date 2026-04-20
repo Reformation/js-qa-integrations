@@ -1,14 +1,13 @@
 import 'dotenv/config';
 
-const { test, expect } = require('@playwright/test');
 const path = require('path');
 const process = require('process');
 
 const REFLogger = require('../../util/ref-logger.js');
-const DeposcoApiClient = require('../../deposco/deposco-api-client');
+const DeposcoApiClient = require('../deposco-api-client');
 
 
-test.describe('Deposco Internal Tests', () => {
+describe('Deposco Internal Tests', () => {
     let loggerName = path.basename(__filename, path.extname(__filename));
     let refLogger = new REFLogger(loggerName);
     let deposcoApiClient;
@@ -36,7 +35,7 @@ test.describe('Deposco Internal Tests', () => {
     };
 
     // Setup before all tests
-    test.beforeAll(async () => {
+    beforeAll(async () => {
         refLogger.info('Initializing test suite with test data');
         refLogger.info(`Test Order Number: ${TEST_DATA.expectedOrderNumber}`);
         refLogger.info(`Test SKU: ${TEST_DATA.expectedSku}`);
@@ -46,13 +45,13 @@ test.describe('Deposco Internal Tests', () => {
     });
 
     // Setup before each test
-    test.beforeEach(async () => {
+    beforeEach(async () => {
         deposcoApiClient = new DeposcoApiClient(process.env.ENV_HOST);
         refLogger.info('DeposcoApiClient initialized for test');
     });
 
     // Optional: Cleanup after each test
-    test.afterEach(async () => {
+    afterEach(async () => {
         // Add any cleanup logic here if needed
         refLogger.info('Test completed');
     });

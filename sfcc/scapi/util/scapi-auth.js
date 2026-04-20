@@ -10,7 +10,7 @@ class ScapiAuthorization {
         this.refLogger = new REFLogger(loggerName);
     }
 
-    getBase64Token(user, pass) {
+    #getBase64Token(user, pass) {
         if (!user || !pass) {
             throw new Error('User or password is missing');
         }
@@ -29,7 +29,7 @@ class ScapiAuthorization {
             scope
         };
 
-        const basicAuth = this.getBase64Token(this.scapiEnv.scapiClientId, this.scapiEnv.scapiClientSecret);
+        const basicAuth = this.#getBase64Token(this.scapiEnv.scapiClientId, this.scapiEnv.scapiClientSecret);
 
         try {
             const httpRequestHelper = new HttpRequestHelper();

@@ -1,16 +1,15 @@
 import 'dotenv/config';
 
-const { test, expect } = require('@playwright/test');
 const path = require('path');
 
-const OrderShipmentProcessor = require('../../../deposco/orders-shipment/create-order-shipment');
+const OrderShipmentProcessor = require('../../orders-shipment/create-order-shipment');
 const REFLogger = require('../../../util/ref-logger.js');
 
-test.describe('Single Order Shipment Processing', () => {
+describe('Single Order Shipment Processing', () => {
     let logger;
     let orderShipmentProcessor;
     
-    test.beforeEach(async () => {
+    beforeEach(async () => {
         logger = new REFLogger('Running order-shipment-processor-test');
         orderShipmentProcessor = new OrderShipmentProcessor(process.env.ENV_HOST);
 

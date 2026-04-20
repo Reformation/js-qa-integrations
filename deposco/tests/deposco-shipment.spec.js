@@ -1,23 +1,22 @@
 import 'dotenv/config';
 
-const { test, expect } = require('@playwright/test');
 const path = require('path');
 const process = require('process');
 
 const REFLogger = require('../../util/ref-logger.js');
-const DeposcoApiShipment = require('../../deposco/deposco-api-shipment');
+const DeposcoApiShipment = require('../deposco-api-shipment');
 
-test.describe('Test Deposco Order Sales Shipment', () => {
+describe('Test Deposco Order Sales Shipment', () => {
     let loggerName = path.basename(__filename, path.extname(__filename));
     let refLogger = new REFLogger(loggerName);
     let deposcoApiShipment;
     
-    test.beforeEach(async () => {
+    beforeEach(async () => {
         deposcoApiShipment = new DeposcoApiShipment(process.env.ENV_HOST);
         refLogger.info('DeposcoApiShipment initialized for test');
     });
 
-    test.afterEach(async () => {
+    afterEach(async () => {
         refLogger.info('Test completed');
     });
 

@@ -21,14 +21,19 @@ class ScapiGiftcardClient {
         this.httpRequestHelper = new HttpRequestHelper();
     }
 
-    async createTestGiftcard(amount, recipientEmail, recipientName, orderNumber) {
+    async createTestGiftcard(amount, recipientEmail, recipientName, orderNumber, sharedCreateEgcSitePrefToken) {
+        if (!sharedCreateEgcSitePrefToken) {
+            throw new Error('testCreationEgcAuthToken value is required to create a test giftcard');
+        }
+
         const giftcardData = {
             amount,
             recipientEmail,
             recipientName,
             senderName: 'QA Automation',
             message: 'Test giftcard',
-            orderNo: orderNumber
+            orderNo: orderNumber,
+            egcAuthToken: sharedCreateEgcSitePrefToken
         };
 
         this.refLogger.info(`Attempting to create test giftcard via SCAPI with amount [ ${amount} ]`);

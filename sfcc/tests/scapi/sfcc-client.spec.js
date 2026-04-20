@@ -1,14 +1,14 @@
 import 'dotenv/config';
 
-const { test, expect } = require('@playwright/test');
 const path = require('path');
 const assert = require('assert');
 
-const REFLogger = require('../util/ref-logger.js');
-const SfccClient = require('../sfcc/sfcc-client');
-const testData = require('./fixtures/test-data.json');
+const REFLogger = require('../../../util/ref-logger.js');
+const SfccClient = require('../../sfcc-client.js');
+const testData = require('../fixtures/test-data.json');
+const SfccGiftcardTestingHelpers = require('../util/sfcc-giftcard-testing-helpers');
 
-test.describe('SfccClient Wrapper Tests', () => {
+describe('SfccClient Wrapper Tests', () => {
     let loggerName = path.basename(__filename, path.extname(__filename));
     let refLogger = new REFLogger(loggerName);
 
@@ -99,34 +99,6 @@ test.describe('SfccClient Wrapper Tests', () => {
         refLogger.info('SfccClient inventory lookup - completed');
     });
 
-    test('Test SfccClient site preference lookup - enablePDPSizePicker flag', async () => {
-        refLogger.info('SfccClient site preference lookup - enablePDPSizePicker flag');
-
-        const sfccClient = new SfccClient();
-        const enablePDPSizePicker = await sfccClient.getCustomSitePreference_PDP_Configuration_enablePDPSizePicker();
-
-        refLogger.info(`Site Pref - enablePDPSizePicker: ${enablePDPSizePicker}`);
-        assert(enablePDPSizePicker != null, '\'enablePDPSizePicker\' site preference inside \'PDP Configuration\' group should not be null!');
-
-        // this gets toggled depending on the environment, uncomment the one that you need, depending on the scenario.
-        // assert(enablePDPSizePicker === true, '\'enablePDPSizePicker\' should be \'true\' in this environment, but it\'s \'false\'!');
-        // assert(enablePDPSizePicker === false, '\'enablePDPSizePicker\' should be \'false\' in this environment, but it\'s \'true\'!');
-
-        refLogger.info('SfccClient site preference lookup - enablePDPSizePicker flag - completed');
-    });
-
-    test('Test SfccClient site preference lookup - junk values', async () => {
-        refLogger.info('SfccClient site preference lookup - junk values');
-
-        const sfccClient = new SfccClient();
-        const junkPrefValue = await sfccClient.getCustomSitePreferenceByGroupAndId('sfsdfsdfa', 'dfshdfhhgfshdg');
-
-        refLogger.info(`Site Pref - junkPrefValue: ${junkPrefValue}`);
-        expect(junkPrefValue).toBeNull();
-
-        refLogger.info('SfccClient site preference lookup - junk values - completed');
-    });
-
     // ---------------------------------------------------------------------------
     // Giftcard methods (SCAPI)
     // ---------------------------------------------------------------------------
@@ -134,11 +106,14 @@ test.describe('SfccClient Wrapper Tests', () => {
         refLogger.info('SfccClient create test giftcard');
 
         const sfccClient = new SfccClient();
+        const giftcardTestingHelpers = new SfccGiftcardTestingHelpers();
+        const sharedCreateEgcSitePrefToken = await giftcardTestingHelpers.getSharedCreateEgcSitePrefToken();
         const response = await sfccClient.createTestGiftcard(
             25,
             'test@thereformation.com',
             'Test User',
-            'QA-12345'
+            'QA-12345',
+            sharedCreateEgcSitePrefToken
         );
 
         refLogger.info(`Create giftcard response: ${JSON.stringify(response)}`);

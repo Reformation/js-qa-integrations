@@ -1,0 +1,8 @@
+# Runtime package should only expose service client code
+sfcc/tests/
+deposco/tests/
+tests/
+test-results/
+vitest.config.js
+vitest.config.mjs
+playwright.config.js

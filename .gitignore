@@ -1,6 +1,23 @@
 .env
-test-results/**/*.zip
-test-results/**/error-context.md
-test-results/.last-run.json
+.env.*
+!.env.example
+
 node_modules/
-**/.package-lock.json
+package-lock.json
+
+# Test artifacts
+test-results/
+tests/test-results/
+.vitest/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/editor noise
+.DS_Store
+.vscode-test/

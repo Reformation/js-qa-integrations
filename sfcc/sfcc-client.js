@@ -137,29 +137,11 @@ class SfccClient {
         throw new Error(`Unsupported data provider [ ${provider} ].`);
     }
 
-    async getCustomSitePreferenceByGroupAndId(groupName, preferenceId) {
-        const provider = this.#getProvider('data');
-        if (provider === 'ocapi') {
-            return await this.ocapiDataClient.getCustomSitePreferenceByGroupAndId(groupName, preferenceId);
-        }
-
-        throw new Error(`Unsupported data provider [ ${provider} ].`);
-    }
-
-    async getCustomSitePreference_PDP_Configuration_enablePDPSizePicker() {
-        const provider = this.#getProvider('data');
-        if (provider === 'ocapi') {
-            return await this.ocapiDataClient.getCustomSitePreference_PDP_Configuration_enablePDPSizePicker();
-        }
-
-        throw new Error(`Unsupported data provider [ ${provider} ].`);
-    }
-
     // Giftcard methods (SCAPI)
-    async createTestGiftcard(amount, recipientEmail, recipientName, orderNumber) {
+    async createTestGiftcard(amount, recipientEmail, recipientName, orderNumber, sharedCreateEgcSitePrefToken) {
         const provider = this.#getProvider('giftcards');
         if (provider === 'scapi') {
-            return await this.scapiGiftcardClient.createTestGiftcard(amount, recipientEmail, recipientName, orderNumber);
+            return await this.scapiGiftcardClient.createTestGiftcard(amount, recipientEmail, recipientName, orderNumber, sharedCreateEgcSitePrefToken);
         }
 
         throw new Error(`Unsupported giftcards provider [ ${provider} ].`);

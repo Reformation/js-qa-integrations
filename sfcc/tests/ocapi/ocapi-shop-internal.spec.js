@@ -1,14 +1,13 @@
 import 'dotenv/config';
 
-const { test, expect } = require('@playwright/test');
 const path = require('path');
 
-const REFLogger = require('../../util/ref-logger.js');
-const OcapiShopClient = require('../../sfcc/ocapi/shop-api/ocapi-shop-client');
-const SfccClient = require('../../sfcc/sfcc-client');
+const REFLogger = require('../../../util/ref-logger.js');
+const OcapiShopClient = require('../../ocapi/shop-api/ocapi-shop-client');
+const SfccClient = require('../../sfcc-client');
 const testData = require('../fixtures/test-data.json');
 
-test.describe('OCAPI Internal Shop API Tests', () => {
+describe('OCAPI Internal Shop API Tests', () => {
     let loggerName = path.basename(__filename, path.extname(__filename));
     let refLogger = new REFLogger(loggerName);
 
