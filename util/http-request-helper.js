@@ -90,7 +90,7 @@ class HttpRequestHelper {
     async performPost({auth, endpoint, payload, isForm, contentType, customHeaders}) {
         try {
             const response = await this.httpWrapper.performPost({endpoint, auth, payload, isForm, contentType, customHeaders});
-            this.refLogger.info(`POST Response: ${JSON.stringify(response)}`);
+            this.refLogger.debug(`POST Response: ${JSON.stringify(response)}`);
 
             // Check the response status code and return the user data if successful
             if (this.isSuccess(response.statusCode)) {

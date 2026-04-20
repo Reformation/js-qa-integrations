@@ -1,12 +1,27 @@
 import 'dotenv/config';
+import { expect } from 'vitest';
 
 const path = require('path');
 const assert = require('assert');
 
 const REFLogger = require('../../../util/ref-logger.js');
+const EnvVarLoader = require('../../../util/env-var-loader');
 const SfccClient = require('../../sfcc-client.js');
 const testData = require('../fixtures/test-data.json');
-const SfccGiftcardTestingHelpers = require('../util/sfcc-giftcard-testing-helpers');
+
+function getRequiredSharedCreateEgcSitePrefToken() {
+    const envHost = process.env.ENV_HOST;
+    if (!envHost) {
+        throw new Error('Missing ENV_HOST environment variable.');
+    }
+
+    const token = EnvVarLoader.loadEnvVar('SHARED_CREATE_EGC_SITE_PREF_TOKEN', envHost);
+    if (!token) {
+        throw new Error('Missing SHARED_CREATE_EGC_SITE_PREF_TOKEN_<ENV_HOST> environment variable. Caller must pass token explicitly.');
+    }
+
+    return token;
+}
 
 describe('SfccClient Wrapper Tests', () => {
     let loggerName = path.basename(__filename, path.extname(__filename));
@@ -23,7 +38,7 @@ describe('SfccClient Wrapper Tests', () => {
         const orderNumber = testData.ocapi.orders.gleOrderNumber;
         const order = await sfccClient.getOrderNumberByGleOrderNumber(orderNumber);
 
-        refLogger.info(`Order response: ${JSON.stringify(order)}`);
+        refLogger.debug(`Order response: ${JSON.stringify(order)}`);
 
         expect(order).not.toBeNull();
         expect(order).toBe(testData.ocapi.orders.expectedMatchingSfccOrderNumber);
@@ -39,7 +54,7 @@ describe('SfccClient Wrapper Tests', () => {
         refLogger.info(`Looking up order number: ${orderNumber}`);
         const order = await sfccClient.getOrderByOrderNumber(orderNumber);
 
-        refLogger.info(`Order response: ${JSON.stringify(order)}`);
+        refLogger.debug(`Order response: ${JSON.stringify(order)}`);
 
         expect(order).not.toBeNull();
         expect(order.order_no).toBe(orderNumber);
@@ -76,7 +91,7 @@ describe('SfccClient Wrapper Tests', () => {
         const basketId = testData.ocapi.baskets.nonexistentBasketId;
         const basket = await sfccClient.getBasketByBasketId(basketId);
 
-        refLogger.info(`Basket: ${JSON.stringify(basket)}`);
+        refLogger.debug(`Basket: ${JSON.stringify(basket)}`);
         expect(basket).toBeNull();
 
         refLogger.info('SfccClient basket lookup - no basket exists - completed');
@@ -106,8 +121,7 @@ describe('SfccClient Wrapper Tests', () => {
         refLogger.info('SfccClient create test giftcard');
 
         const sfccClient = new SfccClient();
-        const giftcardTestingHelpers = new SfccGiftcardTestingHelpers();
-        const sharedCreateEgcSitePrefToken = await giftcardTestingHelpers.getSharedCreateEgcSitePrefToken();
+        const sharedCreateEgcSitePrefToken = getRequiredSharedCreateEgcSitePrefToken();
         const response = await sfccClient.createTestGiftcard(
             25,
             'test@thereformation.com',
@@ -116,8 +130,32 @@ describe('SfccClient Wrapper Tests', () => {
             sharedCreateEgcSitePrefToken
         );
 
-        refLogger.info(`Create giftcard response: ${JSON.stringify(response)}`);
+        refLogger.debug(`Create giftcard response: ${JSON.stringify(response)}`);
         expect(response).not.toBeNull();
+
+        // create assertions w the response object here 
+        expect(response.data.giftCertificateCode).toBeDefined();
+        expect(response.data.maskedGiftCertificateCode).toBeDefined();
+        expect(response.data.merchantId).toBeDefined();
+        expect(response.data.amount).toBeDefined();
+        expect(response.data.currencyCode).toBeDefined();
+        expect(response.data.orderNo).toBeDefined();
+        expect(response.data.recipientEmail).toBeDefined();
+        expect(response.data.recipientName).toBeDefined();
+        expect(response.data.senderName).toBeDefined();
+        expect(response.data.message).toBeDefined();
+
+        // please add the exact values for all items that were initially passed in 
+        expect(response.data.amount).toBe(25);
+        expect(response.data.currencyCode).toBe('USD');
+        expect(response.data.orderNo).toBe('QA-12345');
+        expect(response.data.recipientEmail).toBe('test@thereformation.com');
+        expect(response.data.recipientName).toBe('Test User');
+        expect(response.data.senderName).toBe('QA Automation');
+        expect(response.data.message).toBe('Test giftcard');
+
+        expect(response.statusCode).toBe(200);
+        expect(response.statusText).toBe('OK');
 
         refLogger.info('SfccClient create test giftcard - completed');
     });
