@@ -22,35 +22,65 @@ class ScapiGiftcardClient {
     }
 
     async createTestGiftcard(amount, recipientEmail, recipientName, orderNumber, sharedCreateEgcSitePrefToken) {
-        if (!sharedCreateEgcSitePrefToken) {
+        if (typeof sharedCreateEgcSitePrefToken !== 'string' || !sharedCreateEgcSitePrefToken.trim()) {
             throw new Error('testCreationEgcAuthToken value is required to create a test giftcard');
         }
 
+        if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+            throw new Error('amount must be a positive number');
+        }
+
+        if (typeof recipientEmail !== 'string' || !recipientEmail.trim()) {
+            throw new Error('recipientEmail is required');
+        }
+
+        const trimmedRecipientEmail = recipientEmail.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(trimmedRecipientEmail)) {
+            throw new Error('recipientEmail must be a valid email address');
+        }
+
+        if (typeof recipientName !== 'string' || !recipientName.trim()) {
+            throw new Error('recipientName is required');
+        }
+
+        const trimmedRecipientName = recipientName.trim();
+        const trimmedOrderNumber = typeof orderNumber === 'string' ? orderNumber.trim() : '';
+
         const giftcardData = {
             amount,
-            recipientEmail,
-            recipientName,
+            recipientEmail: trimmedRecipientEmail,
+            recipientName: trimmedRecipientName,
             senderName: 'QA Automation',
-            message: 'Test giftcard',
-            orderNo: orderNumber,
-            egcAuthToken: sharedCreateEgcSitePrefToken
+            message: 'Test giftcard'
         };
+
+        if (trimmedOrderNumber) {
+            giftcardData.orderNo = trimmedOrderNumber;
+        }
 
         this.refLogger.info(`Attempting to create test giftcard via SCAPI with amount [ ${amount} ]`);
 
         try {
             const bearerToken = await this.scapiAuth.getScapiToken();
             const endpoint = `https://${this.scapiEnv.scapiShortCode}.api.commercecloud.salesforce.com/custom/create-test-giftcard/${this.scapiEnv.scapiApiVersion}/organizations/${this.scapiEnv.scapiOrgId}/createTestGiftcard?siteId=reformation-us`;
+            const redactedGiftcardData = {
+                ...giftcardData,
+                egcAuthToken: '[REDACTED]'
+            };
 
             this.refLogger.debug(`SCAPI endpoint for creating test giftcard: ${endpoint}`);
-            this.refLogger.debug(`SCAPI payload for creating test giftcard: ${JSON.stringify(giftcardData)}`);
+            this.refLogger.debug(`SCAPI payload for creating test giftcard: ${JSON.stringify(redactedGiftcardData)}`);
 
             const response = await this.httpRequestHelper.performPost({
                 auth: bearerToken,
                 endpoint,
                 payload: giftcardData,
                 isForm: false,
-                contentType: 'application/json'
+                contentType: 'application/json',
+                customHeaders: {
+                    'c_egc_auth': sharedCreateEgcSitePrefToken
+                }
             });
 
             this.refLogger.info(`Test giftcard created successfully: ${JSON.stringify(response)}`);

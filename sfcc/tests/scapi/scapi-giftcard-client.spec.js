@@ -4,9 +4,23 @@ const path = require('path');
 const assert = require('assert');
 
 const REFLogger = require('../../../util/ref-logger.js');
+const EnvVarLoader = require('../../../util/env-var-loader');
 const SfccClient = require('../../sfcc-client');
 const ScapiGiftcardClient = require('../../scapi/scapi-giftcard-client');
-const SfccGiftcardTestingHelpers = require('../util/sfcc-giftcard-testing-helpers');
+
+function getRequiredSharedCreateEgcSitePrefToken() {
+    const envHost = process.env.ENV_HOST;
+    if (!envHost) {
+        throw new Error('Missing ENV_HOST environment variable.');
+    }
+
+    const token = EnvVarLoader.loadEnvVar('SHARED_CREATE_EGC_SITE_PREF_TOKEN', envHost);
+    if (!token) {
+        throw new Error('Missing SHARED_CREATE_EGC_SITE_PREF_TOKEN_<ENV_HOST> environment variable. Caller must pass token explicitly.');
+    }
+
+    return token;
+}
 
 describe('SCAPI Giftcard Client Tests', () => {
     let loggerName = path.basename(__filename, path.extname(__filename));
@@ -18,11 +32,8 @@ describe('SCAPI Giftcard Client Tests', () => {
     test('Test ScapiGiftcardClient create test giftcard with valid token', async () => {
         refLogger.info('ScapiGiftcardClient create test giftcard with valid token');
 
-        const sfccClient = new SfccClient();
-        const giftcardTestingHelpers = new SfccGiftcardTestingHelpers();
-        const sharedCreateEgcSitePrefToken = await giftcardTestingHelpers.getSharedCreateEgcSitePrefToken();
-        
-        refLogger.info(`EGC auth token: ${sharedCreateEgcSitePrefToken}`);
+        const sharedCreateEgcSitePrefToken = getRequiredSharedCreateEgcSitePrefToken();
+
         assert(sharedCreateEgcSitePrefToken != null, 'sharedCreateEgcSitePrefToken should not be null');
 
         const scapiGiftcardClient = new ScapiGiftcardClient();
@@ -59,7 +70,7 @@ describe('SCAPI Giftcard Client Tests', () => {
             expect.fail('Expected error to be thrown for null token');
         } catch (error) {
             refLogger.info(`Expected error caught: ${error?.message}`);
-            assert(error?.message.includes('sharedCreateEgcSitePrefToken is required'), 'Error message should mention required token');
+            assert.strictEqual(error?.message, 'testCreationEgcAuthToken value is required to create a test giftcard');
         }
 
         refLogger.info('ScapiGiftcardClient create test giftcard with null token - completed');
@@ -84,7 +95,7 @@ describe('SCAPI Giftcard Client Tests', () => {
             expect.fail('Expected error to be thrown for empty token');
         } catch (error) {
             refLogger.info(`Expected error caught: ${error?.message}`);
-            assert(error?.message.includes('sharedCreateEgcSitePrefToken is required'), 'Error message should mention required token');
+            assert.strictEqual(error?.message, 'testCreationEgcAuthToken value is required to create a test giftcard');
         }
 
         refLogger.info('ScapiGiftcardClient create test giftcard with empty token - completed');
@@ -109,49 +120,136 @@ describe('SCAPI Giftcard Client Tests', () => {
             expect.fail('Expected error to be thrown for undefined token');
         } catch (error) {
             refLogger.info(`Expected error caught: ${error?.message}`);
-            assert(error?.message.includes('sharedCreateEgcSitePrefToken is required'), 'Error message should mention required token');
+            assert.strictEqual(error?.message, 'testCreationEgcAuthToken value is required to create a test giftcard');
         }
 
         refLogger.info('ScapiGiftcardClient create test giftcard with undefined token - completed');
     });
 
     // ---------------------------------------------------------------------------
-    // Test SfccClient wrapper - caller retrieves and passes token
-    // ---------------------------------------------------------------------------
-    test('Test SfccClient wrapper create test giftcard - caller passes token', async () => {
-        refLogger.info('SfccClient wrapper create test giftcard - caller passes token');
-
-        const sfccClient = new SfccClient();
-        const giftcardTestingHelpers = new SfccGiftcardTestingHelpers();
-        const sharedCreateEgcSitePrefToken = await giftcardTestingHelpers.getSharedCreateEgcSitePrefToken();
-        const response = await sfccClient.createTestGiftcard(
-            50,
-            'wrapper-test@thereformation.com',
-            'Wrapper Test User',
-            'QA-67890',
-            sharedCreateEgcSitePrefToken
-        );
-
-        refLogger.info(`Create giftcard response: ${JSON.stringify(response)}`);
-        expect(response).not.toBeNull();
-
-        refLogger.info('SfccClient wrapper create test giftcard - caller passes token - completed');
-    });
-
-    // ---------------------------------------------------------------------------
     // Test site preference retrieval for giftcard testing config
     // ---------------------------------------------------------------------------
-    test('Test SfccClient get giftcard testing auth token - should not be null', async () => {
-        refLogger.info('SfccClient get giftcard testing auth token');
+    test('Test caller-provided giftcard auth token - should not be null', async () => {
+        refLogger.info('Caller-provided giftcard auth token should not be null');
 
-        const giftcardTestingHelpers = new SfccGiftcardTestingHelpers();
-        const sharedCreateEgcSitePrefToken = await giftcardTestingHelpers.getSharedCreateEgcSitePrefToken();
+        const sharedCreateEgcSitePrefToken = getRequiredSharedCreateEgcSitePrefToken();
 
-        refLogger.info(`EGC auth token: ${sharedCreateEgcSitePrefToken}`);
         assert(sharedCreateEgcSitePrefToken != null, 'sharedCreateEgcSitePrefToken site preference should not be null');
         assert(sharedCreateEgcSitePrefToken !== '', 'sharedCreateEgcSitePrefToken site preference should not be empty');
 
-        refLogger.info('SfccClient get giftcard testing auth token - completed');
+        refLogger.info('Caller-provided giftcard auth token check - completed');
+    });
+
+    // ---------------------------------------------------------------------------
+    // Input validation tests
+    // ---------------------------------------------------------------------------
+    test('Test ScapiGiftcardClient create test giftcard with invalid amount - should fail', async () => {
+        refLogger.info('ScapiGiftcardClient create test giftcard with invalid amount');
+
+        const scapiGiftcardClient = new ScapiGiftcardClient();
+
+        try {
+            await scapiGiftcardClient.createTestGiftcard(
+                0,
+                'test@thereformation.com',
+                'Test User',
+                'QA-12345',
+                'dummy-token'
+            );
+            expect.fail('Expected error to be thrown for invalid amount');
+        } catch (error) {
+            refLogger.info(`Expected error caught: ${error?.message}`);
+            assert.strictEqual(error?.message, 'amount must be a positive number');
+        }
+
+        refLogger.info('ScapiGiftcardClient create test giftcard with invalid amount - completed');
+    });
+
+    test('Test ScapiGiftcardClient create test giftcard with missing recipientEmail - should fail', async () => {
+        refLogger.info('ScapiGiftcardClient create test giftcard with missing recipientEmail');
+
+        const scapiGiftcardClient = new ScapiGiftcardClient();
+
+        try {
+            await scapiGiftcardClient.createTestGiftcard(
+                25,
+                '   ',
+                'Test User',
+                'QA-12345',
+                'dummy-token'
+            );
+            expect.fail('Expected error to be thrown for missing recipientEmail');
+        } catch (error) {
+            refLogger.info(`Expected error caught: ${error?.message}`);
+            assert.strictEqual(error?.message, 'recipientEmail is required');
+        }
+
+        refLogger.info('ScapiGiftcardClient create test giftcard with missing recipientEmail - completed');
+    });
+
+    test('Test ScapiGiftcardClient create test giftcard with invalid recipientEmail format - should fail', async () => {
+        refLogger.info('ScapiGiftcardClient create test giftcard with invalid recipientEmail format');
+
+        const scapiGiftcardClient = new ScapiGiftcardClient();
+
+        try {
+            await scapiGiftcardClient.createTestGiftcard(
+                25,
+                'not-an-email',
+                'Test User',
+                'QA-12345',
+                'dummy-token'
+            );
+            expect.fail('Expected error to be thrown for invalid recipientEmail format');
+        } catch (error) {
+            refLogger.info(`Expected error caught: ${error?.message}`);
+            assert.strictEqual(error?.message, 'recipientEmail must be a valid email address');
+        }
+
+        refLogger.info('ScapiGiftcardClient create test giftcard with invalid recipientEmail format - completed');
+    });
+
+    test('Test ScapiGiftcardClient create test giftcard with missing recipientName - should fail', async () => {
+        refLogger.info('ScapiGiftcardClient create test giftcard with missing recipientName');
+
+        const scapiGiftcardClient = new ScapiGiftcardClient();
+
+        try {
+            await scapiGiftcardClient.createTestGiftcard(
+                25,
+                'test@thereformation.com',
+                ' ',
+                'QA-12345',
+                'dummy-token'
+            );
+            expect.fail('Expected error to be thrown for missing recipientName');
+        } catch (error) {
+            refLogger.info(`Expected error caught: ${error?.message}`);
+            assert.strictEqual(error?.message, 'recipientName is required');
+        }
+
+        refLogger.info('ScapiGiftcardClient create test giftcard with missing recipientName - completed');
+    });
+
+    test('Test ScapiGiftcardClient create test giftcard with missing orderNumber - should pass validation', async () => {
+        refLogger.info('ScapiGiftcardClient create test giftcard with missing orderNumber should pass validation');
+
+        const scapiGiftcardClient = new ScapiGiftcardClient();
+
+        scapiGiftcardClient.scapiAuth.getScapiToken = async () => 'mock-token';
+        scapiGiftcardClient.httpRequestHelper.performPost = async ({payload}) => payload;
+
+        const response = await scapiGiftcardClient.createTestGiftcard(
+            25,
+            'test@thereformation.com',
+            'Test User',
+            '',
+            'dummy-token'
+        );
+
+        assert.strictEqual(Object.prototype.hasOwnProperty.call(response, 'orderNo'), false);
+
+        refLogger.info('ScapiGiftcardClient create test giftcard with missing orderNumber should pass validation - completed');
     });
 
 });

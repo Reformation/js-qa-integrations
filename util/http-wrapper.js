@@ -9,9 +9,9 @@ class HttpWrapper {
     }
 
     // this is private.  Should only call the convenience methods below
-    async #performRequest({requestType, endpoint, auth, paramsOrPayload, isForm, contentType}) {
+    async #performRequest({requestType, endpoint, auth, paramsOrPayload, isForm, contentType, customHeaders}) {
         try {
-            return await requestHelper.sendRequest({url:endpoint, accessToken:auth, payload:paramsOrPayload, type:requestType, isForm, contentType});
+            return await requestHelper.sendRequest({url:endpoint, accessToken:auth, payload:paramsOrPayload, type:requestType, isForm, contentType, customHeaders});
         } catch (error) {
             this.refLogger.error(`HTTP [ ${requestType} ] Error`);
             this.refLogger.error(error.message);
@@ -23,8 +23,8 @@ class HttpWrapper {
         return await this.#performRequest({requestType:'GET', endpoint, auth, paramsOrPayload:param, isForm, contentType});
     }
 
-    async performPost({endpoint, auth, payload, isForm = false, contentType = null}) {
-        return await this.#performRequest({requestType:'POST', endpoint, auth, paramsOrPayload:payload, isForm, contentType});
+    async performPost({endpoint, auth, payload, isForm = false, contentType = null, customHeaders = null}) {
+        return await this.#performRequest({requestType:'POST', endpoint, auth, paramsOrPayload:payload, isForm, contentType, customHeaders});
     }
 
     async performPut({endpoint, auth, payload, isForm, contentType = null}) {

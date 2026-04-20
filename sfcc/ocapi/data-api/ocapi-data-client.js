@@ -73,8 +73,9 @@ class OcapiDataClient {
 
     async getCustomSitePreference_GiftCardTesting_testCreationEgcAuthToken() {
         const sitePref = await this.getCustomSitePreferenceByGroupAndId('Gift Card Testing Configs', 'testCreationEgcAuthToken');
-        this.refLogger.debug(`Site Preference - testCreationEgcAuthToken: ${JSON.stringify(sitePref)}`);
         const sitePreferenceExists = sitePref?.id === 'testCreationEgcAuthToken' && sitePref?.site_values?.['reformation-us'] !== undefined;
+
+        this.refLogger.debug(`Site Preference - testCreationEgcAuthToken exists: ${sitePreferenceExists}`);
 
         return sitePreferenceExists ? sitePref.site_values['reformation-us'] : null;
     }
