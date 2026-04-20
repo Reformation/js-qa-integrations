@@ -2,11 +2,11 @@ const path = require('path');
 
 var ocapiDataPath = 'dw/data/v23_1/';
 
-const REFLogger = require('./ref-logger');
-const RefInventoryProductRecord = require('./ref-inventory-product-record.js');
-const requestHelper = require('./request-helper.js');
+const REFLogger = require('../../../../util/ref-logger.js');
+const RefInventoryProductRecord = require('../../../ref-inventory-product-record.js');
+const requestHelper = require('../../../../util/request-helper.js');
 
-const OcapiDataClient = require('../sfcc/ocapi/data-api/ocapi-data-client');
+const OcapiDataClient = require('../ocapi-data-client.js');
 
 function getInventoryLists(sfccEnv, dataToken,) {
     console.log('inside getInventoryLists');
