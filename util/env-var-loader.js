@@ -10,6 +10,9 @@ class EnvVarLoader {
      * @throws {Error} If the variable is not set
      */
     static loadEnvVar(varName, envStr, category = null) {
+        if (!envStr || typeof envStr !== 'string') {
+            throw new Error(`envStr must be a non-empty string. Received: ${envStr}`);
+        }
         const key = `${varName}_${envStr.toUpperCase()}`;
 
         if (!process.env[key]) {
