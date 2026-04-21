@@ -1,7 +1,7 @@
 const BaseIntegrationEnv = require('../util/base-integration-env');
 
 class SfccEnvironment extends BaseIntegrationEnv {
-    constructor(envStr) {
+    constructor(envStr = process.env.ENV_HOST) {
         super(envStr);
         this.sfccHost = '';
         this.sfccInstanceType = '';

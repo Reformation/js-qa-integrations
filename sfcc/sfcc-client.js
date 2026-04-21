@@ -3,6 +3,7 @@ const OrdersService = require('./facade/services/orders-service');
 const BasketsService = require('./facade/services/baskets-service');
 const StoresService = require('./facade/services/stores-service');
 const GiftcardsService = require('./facade/services/giftcards-service');
+const SitePreferencesService = require('./facade/services/sitepreferences-service');
 
 class SfccClient {
     constructor(envStr = process.env.ENV_HOST, options = {}) {
@@ -28,6 +29,7 @@ class SfccClient {
         this.basketsService = new BasketsService(serviceConfig);
         this.inventoryService = new InventoryService(serviceConfig);
         this.giftcardsService = new GiftcardsService(serviceConfig);
+        this.sitePreferencesService = new SitePreferencesService(serviceConfig);
     }
 
     #getProvider(capability) {
@@ -95,6 +97,11 @@ class SfccClient {
             orderNumber,
             sharedCreateEgcSitePrefToken
         );
+    }
+
+    // Site Preferences methods
+    async getPDPSizePickerEnabled() {
+        return await this.sitePreferencesService.getPDPSizePickerEnabled();
     }
 }
 
