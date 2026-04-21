@@ -1,6 +1,8 @@
-const OcapiShopClient = require('./ocapi/shop-api/ocapi-shop-client');
-const OcapiDataClient = require('./ocapi/data-api/ocapi-data-client');
-const ScapiGiftcardClient = require('./scapi/scapi-giftcard-client');
+const InventoryService = require('./facade/services/inventory-service');
+const OrdersService = require('./facade/services/orders-service');
+const BasketsService = require('./facade/services/baskets-service');
+const StoresService = require('./facade/services/stores-service');
+const GiftcardsService = require('./facade/services/giftcards-service');
 
 class SfccClient {
     constructor(envStr = process.env.ENV_HOST, options = {}) {
@@ -14,20 +16,18 @@ class SfccClient {
             giftcards: options?.providerMap?.giftcards || 'scapi'
         };
 
-        this.ocapiShopClient = new OcapiShopClient(
-            this.envStr,
-            options.apiVersion || 'v21_3',
-            options.ocapiOptions || {}
-        );
+        const serviceConfig = {
+            envStr: this.envStr,
+            apiVersion: options.apiVersion || 'v21_3',
+            ocapiOptions: options.ocapiOptions || {},
+            providerResolver: (capability) => this.#getProvider(capability)
+        };
 
-        this.ocapiDataClient = new OcapiDataClient(
-            this.envStr,
-            options.apiVersion || 'v21_3'
-        );
-
-        this.scapiGiftcardClient = new ScapiGiftcardClient(
-            this.envStr
-        );
+        this.ordersService = new OrdersService(serviceConfig);
+        this.storesService = new StoresService(serviceConfig);
+        this.basketsService = new BasketsService(serviceConfig);
+        this.inventoryService = new InventoryService(serviceConfig);
+        this.giftcardsService = new GiftcardsService(serviceConfig);
     }
 
     #getProvider(capability) {
@@ -36,115 +36,65 @@ class SfccClient {
 
     // Order methods
     async getOrderByOrderNumber(orderNumber) {
-        const provider = this.#getProvider('orders');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.getOrderByOrderNumber(orderNumber);
-        }
-
-        throw new Error(`Unsupported orders provider [ ${provider} ].`);
+        return await this.ordersService.getOrderByOrderNumber(orderNumber);
     }
 
     async getOrderNumberByGleOrderNumber(gleOrderNumber) {
-        const provider = this.#getProvider('orders');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.getSfccOrderNumberByGLEOrderNumber(gleOrderNumber);
-        }
-
-        throw new Error(`Unsupported orders provider [ ${provider} ].`);
+        return await this.ordersService.getOrderNumberByGleOrderNumber(gleOrderNumber);
     }
 
     // Store methods
     async getStoreList() {
-        const provider = this.#getProvider('stores');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.getSfccStoreList();
-        }
-
-        throw new Error(`Unsupported stores provider [ ${provider} ].`);
+        return await this.storesService.getStoreList();
     }
 
     // Basket methods
     async getBasketByBasketId(basketId) {
-        const provider = this.#getProvider('baskets');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.getBasketByBasketId(basketId);
-        }
-
-        throw new Error(`Unsupported baskets provider [ ${provider} ].`);
+        return await this.basketsService.getBasketByBasketId(basketId);
     }
 
     async deleteBasket(basketId) {
-        const provider = this.#getProvider('baskets');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.deleteBasket(basketId);
-        }
-
-        throw new Error(`Unsupported baskets provider [ ${provider} ].`);
+        return await this.basketsService.deleteBasket(basketId);
     }
 
     async createBasket(payload) {
-        const provider = this.#getProvider('baskets');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.createBasket(payload);
-        }
-
-        throw new Error(`Unsupported baskets provider [ ${provider} ].`);
+        return await this.basketsService.createBasket(payload);
     }
 
     async getBasket(basketId, optionalQuery) {
-        const provider = this.#getProvider('baskets');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.getBasket(basketId, optionalQuery);
-        }
-
-        throw new Error(`Unsupported baskets provider [ ${provider} ].`);
+        return await this.basketsService.getBasket(basketId, optionalQuery);
     }
 
     async forceBasketHubCodes(basketId, countryCode = 'US') {
-        const provider = this.#getProvider('baskets');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.forceBasketHubCodes(basketId, countryCode);
-        }
-
-        throw new Error(`Unsupported baskets provider [ ${provider} ].`);
+        return await this.basketsService.forceBasketHubCodes(basketId, countryCode);
     }
 
     async addProduct(basketId, productId, quantity = 1) {
-        const provider = this.#getProvider('baskets');
-        if (provider === 'ocapi') {
-            return await this.ocapiShopClient.addProduct(basketId, productId, quantity);
-        }
-
-        throw new Error(`Unsupported baskets provider [ ${provider} ].`);
+        return await this.basketsService.addProduct(basketId, productId, quantity);
     }
 
     // Data API methods
     async getInventoryForSku(sku, inventoryList = 'ref-web-inventory') {
-        const provider = this.#getProvider('data');
-        if (provider === 'ocapi') {
-            return await this.ocapiDataClient.getInventoryForSku(sku, inventoryList);
-        }
-
-        throw new Error(`Unsupported data provider [ ${provider} ].`);
+        return await this.inventoryService.getInventoryForSku(sku, inventoryList);
     }
 
     async putInventory(inventoryRecord, inventoryList = 'ref-web-inventory') {
-        const provider = this.#getProvider('data');
-        if (provider === 'ocapi') {
-            return await this.ocapiDataClient.putInventory(inventoryRecord, inventoryList);
-        }
+        return await this.inventoryService.putInventory(inventoryRecord, inventoryList);
+    }
 
-        throw new Error(`Unsupported data provider [ ${provider} ].`);
+    async initializeAllInventoryForSku(sku, inventoryData) {
+        return await this.inventoryService.initializeAllInventoryForSku(sku, inventoryData);
     }
 
     // Giftcard methods (SCAPI)
     async createTestGiftcard(amount, recipientEmail, recipientName, orderNumber, sharedCreateEgcSitePrefToken) {
-        const provider = this.#getProvider('giftcards');
-        if (provider === 'scapi') {
-            return await this.scapiGiftcardClient.createTestGiftcard(amount, recipientEmail, recipientName, orderNumber, sharedCreateEgcSitePrefToken);
-        }
-
-        throw new Error(`Unsupported giftcards provider [ ${provider} ].`);
+        return await this.giftcardsService.createTestGiftcard(
+            amount,
+            recipientEmail,
+            recipientName,
+            orderNumber,
+            sharedCreateEgcSitePrefToken
+        );
     }
 }
 
