@@ -30,7 +30,7 @@ describe('OCAPI Internal Shop API Tests', () => {
         const orderNumber = testData.ocapi.orders.gleOrderNumber;
         const order = await ocapiShopClient.getSfccOrderNumberByGLEOrderNumber(orderNumber);
         
-        refLogger.info(`Order response: ${JSON.stringify(order)}`);
+        refLogger.debug(`Order response: ${JSON.stringify(order)}`);
         
         // Validate order was retrieved
         expect(order).not.toBeNull();
@@ -46,7 +46,7 @@ describe('OCAPI Internal Shop API Tests', () => {
         const orderNumber = testData.ocapi.orders.usOrderNumber;
         const order = await ocapiShopClient.getOrderByOrderNumber(orderNumber);
         
-        refLogger.info(`Order response: ${JSON.stringify(order)}`);
+        refLogger.debug(`Order response: ${JSON.stringify(order)}`);
         
         // Validate order was retrieved
         expect(order).not.toBeNull();
@@ -62,7 +62,7 @@ describe('OCAPI Internal Shop API Tests', () => {
         const sfccClient = new SfccClient();
         const sfccStoreList = await sfccClient.getStoreList();
         
-        refLogger.info(`Order response: ${JSON.stringify(sfccStoreList)}`);
+        refLogger.debug(`Order response: ${JSON.stringify(sfccStoreList)}`);
         
         // Validate order was retrieved
         expect(sfccStoreList).not.toBeNull();

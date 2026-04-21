@@ -62,7 +62,7 @@ describe('Deposco Internal Tests', () => {
         try {
             const orderStatus = await deposcoApiClient.getOrderStatus(TEST_DATA.expectedOrderNumber);
             
-            refLogger.info(`Order Response: ${JSON.stringify(orderStatus, null, 2)}`);
+            refLogger.debug(`Order Response: ${JSON.stringify(orderStatus, null, 2)}`);
             
             expect(orderStatus).toBeDefined();
             expect(orderStatus).not.toBeNull();

@@ -1,13 +1,9 @@
-// SitePreferencesService: Facade for custom site preference lookups
-// Keeps OcapiDataClient hidden from consumers
-
 const OcapiDataClient = require('../../ocapi/data-api/ocapi-data-client');
 
 class SitePreferencesService {
-    constructor(envStr, apiVersion, ocapiOptions, providerResolver) {
+    constructor({ envStr, apiVersion, providerResolver }) {
         this.envStr = envStr;
         this.apiVersion = apiVersion;
-        this.ocapiOptions = ocapiOptions;
         this.providerResolver = providerResolver;
         this._ocapiDataClient = null;
     }
@@ -16,26 +12,37 @@ class SitePreferencesService {
     // (e.g. unit tests that validate logic before any network call is made).
     get ocapiDataClient() {
         if (!this._ocapiDataClient) {
-            this._ocapiDataClient = new OcapiDataClient(
-                this.envStr,
-                this.apiVersion,
-                this.ocapiOptions,
-                this.providerResolver
-            );
+            this._ocapiDataClient = new OcapiDataClient(this.envStr, this.apiVersion);
         }
         return this._ocapiDataClient;
     }
 
+    #getProvider(capability) {
+        return this.providerResolver ? this.providerResolver(capability) : 'ocapi';
+    }
+
     async getPDPSizePickerEnabled() {
-        return this.ocapiDataClient.getCustomSitePreference_PDP_Configuration_enablePDPSizePicker();
+        const provider = this.#getProvider('data');
+        if (provider === 'ocapi') {
+            return await this.ocapiDataClient.getCustomSitePreference_PDP_Configuration_enablePDPSizePicker();
+        }
+        throw new Error(`Unsupported data provider [ ${provider} ].`);
     }
 
     async getGiftCardTestingToken() {
-        return this.ocapiDataClient.getCustomSitePreference_GiftCardTesting_testCreationEgcAuthToken();
+        const provider = this.#getProvider('data');
+        if (provider === 'ocapi') {
+            return await this.ocapiDataClient.getCustomSitePreference_GiftCardTesting_testCreationEgcAuthToken();
+        }
+        throw new Error(`Unsupported data provider [ ${provider} ].`);
     }
 
     async getCustomSitePreferenceByGroupAndId(groupName, preferenceId) {
-        return this.ocapiDataClient.getCustomSitePreferenceByGroupAndId(groupName, preferenceId);
+        const provider = this.#getProvider('data');
+        if (provider === 'ocapi') {
+            return await this.ocapiDataClient.getCustomSitePreferenceByGroupAndId(groupName, preferenceId);
+        }
+        throw new Error(`Unsupported data provider [ ${provider} ].`);
     }
 }
 

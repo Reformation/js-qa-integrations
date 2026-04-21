@@ -116,7 +116,7 @@ class OcapiShopClient {
                 contentType: 'application/json'
             });
 
-            this.refLogger.info(`Order response: ${JSON.stringify(response)}`);
+            this.refLogger.debug(`Order response: ${JSON.stringify(response)}`);
 
             // Extract order_no from response
             if (response?.data?.hits?.length > 0) {

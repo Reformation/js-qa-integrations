@@ -83,7 +83,7 @@ class ScapiGiftcardClient {
                 }
             });
 
-            this.refLogger.info(`Test giftcard created successfully: ${JSON.stringify(response)}`);
+            this.refLogger.debug(`Test giftcard created successfully: ${JSON.stringify(response)}`);
             return response;
         } catch (error) {
             this.refLogger.error(`Error creating test giftcard: ${error?.message}`);
