@@ -9,6 +9,7 @@
     "sfcc/**/*.js",
     "deposco/**/*.js",
     "util/**/*.js",
+    "slack/**/*.js",
     "!sfcc/tests/**",
     "!deposco/tests/**"
   ],
@@ -28,7 +29,10 @@
   "author": "Reformation",
   "license": "ISC",
   "dependencies": {
+    "argparse": "^2.0.1",
     "axios": "^1.8.1",
+    "cheerio": "^1.0.0",
+    "luxon": "^3.6.0",
     "papaparse": "^5.5.3",
     "winston": "^3.17.0",
     "xml2js": "^0.6.2"

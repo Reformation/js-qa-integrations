@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+    <testsuite name="pytest" errors="0" failures="4" skipped="0" tests="18" time="1396.404" timestamp="2025-01-08T21:45:44.485724" hostname="fv-az1076-540">
+        <testcase classname="src.HELLO_WORLD.test_hello_world.TestHelloWorld" name="test_hello_world_success[chromium]" time="8.963" />
+        <testcase classname="src.baseline.home_delivery.test_home_delivery_logged_in.TestBaselineHomeDeliveryLoggedIn" name="test_simple_home_delivery_order_logged_in[chromium]" time="104.223" />
+        <testcase classname="src.baseline.in_store_pickup.test_ispu_logged_in.TestBaselineISPULoggedIn" name="test_simple_ispu_order_logged_in[chromium]" time="141.495">
+            <failure message="AssertionError: Locator expected to be visible&#10;Actual value: &lt;element(s) not found&gt; &#10;Call log:&#10;LocatorAssertions.to_be_visible with timeout 5000ms&#10;  - waiting for get_by_text(&quot;Boston&quot;)">self = &lt;test_ispu_logged_in.TestBaselineISPULoggedIn object at 0x7fdff660af90&gt;
+page = &lt;Page url='https://development.thereformation.com/products/melanie-top/1313793IVO.html?dwvar_1313793IVO_color=IVO&amp;dwvar_1313793IVO_size_clothing=004&amp;quantity=1'&gt;
+env_host = 'dev'
+
+    @pytest.mark.baseline
+    @pytest.mark.bug_fix
+    @pytest.mark.bug_fix_ispu
+    @pytest.mark.bug_fix_checkout
+    @pytest.mark.bug_fix_checkout_single_product
+    def test_simple_ispu_order_logged_in(self, page, env_host = os.environ['ENV_HOST']):
+            self.ref_logger.info('Started test_simple_ispu_order_logged_in')
+    
+            site_navigation = NavigationCommon()
+    
+            ref_common = REFCommon()
+            ref_common.spoof_attentive_cookie(page)
+    
+            # 0 set up ISPU inventory for the test product
+            ispu_product = ISPUProduct(env_host)
+    
+            # 1 HIT THE PDP AND LOGIN
+            site_navigation.navigate_to_pdp_and_login(page, env_host, ispu_product.pdp_url)
+            page.wait_for_timeout(1000)
+    
+            # 2 INITIAL SETUP -- OPEN THE MINICART, GET THE BASKET ID AND DELETE THE BASKET, IF IT EXISTS
+            ref_common.delete_existing_basket(page, env_host)
+            page.wait_for_timeout(1000)
+    
+            # 3 GO BACK TO THE PDP AND START THE TEST
+            site_navigation.navigate_to_pdp(page, ispu_product.pdp_url)
+    
+            # 4 ADD AN ISPU ITEM TO BAG
+            ispu_common = ISPUCommon()
+&gt;           ispu_common.add_ispu_item_to_bag(page, env_host, ispu_product)
+
+src/baseline/in_store_pickup/test_ispu_logged_in.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/common/in_store_pickup/ispu_common.py:55: in add_ispu_item_to_bag
+    pdp.add_sized_item_with_instore_pickup_to_bag(ispu_product.product['size'], test_store_zipcode, test_store_name, )
+src/common/pages/ecom/product_display_page.py:200: in add_sized_item_with_instore_pickup_to_bag
+    self.choose_ispu_store(store_location, store_name)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;src.common.pages.ecom.product_display_page.ProductDisplayPage object at 0x7fdff496a710&gt;
+store_location = '02115', store_name = 'Boston'
+
+    def choose_ispu_store(self, store_location, store_name = None):
+        self.store_location_search.fill(store_location)
+        self.find_stores_btn.click()
+    
+        #  Probably need to move this
+        self.page.wait_for_timeout(3000)
+        # make sure that at least 1 store was returned
+        # otherwise Store pick up popup displays something like this for the product:
+        #
+        # Bad news. We’re not seeing Medium Rosetta
+        # Shoulder Bag in Boss Suede and size OS available
+        # for pickup near you.
+        expect(self.page.get_by_text("Bad news.")).not_to_be_visible()
+    
+        # eg. zipcode 10012 has more than 1 store, need to be more specific for location in some cases
+        if store_name:
+            store_name_radio_button = self.page.get_by_text(store_name)
+&gt;           expect(store_name_radio_button).to_be_visible()
+E           AssertionError: Locator expected to be visible
+E           Actual value: &lt;element(s) not found&gt; 
+E           Call log:
+E           LocatorAssertions.to_be_visible with timeout 5000ms
+E             - waiting for get_by_text("Boston")
+
+src/common/pages/ecom/product_display_page.py:184: AssertionError</failure>
+        </testcase>
+        <testcase classname="src.baseline.in_store_pickup.test_ispu_logged_out.TestBaselineISPULoggedOut" name="test_simple_ispu_order_logged_out[chromium]" time="78.707">
+            <failure message="AssertionError: Locator expected to be visible&#10;Actual value: &lt;element(s) not found&gt; &#10;Call log:&#10;LocatorAssertions.to_be_visible with timeout 5000ms&#10;  - waiting for get_by_text(&quot;Boston&quot;)">self = &lt;test_ispu_logged_out.TestBaselineISPULoggedOut object at 0x7fdff6610810&gt;
+page = &lt;Page url='https://development.thereformation.com/products/melanie-top/1313793IVO.html?dwvar_1313793IVO_color=IVO&amp;dwvar_1313793IVO_size_clothing=004&amp;quantity=1'&gt;
+env_host = 'dev'
+
+    @pytest.mark.baseline
+    @pytest.mark.bug_fix
+    @pytest.mark.bug_fix_ispu
+    @pytest.mark.bug_fix_checkout
+    @pytest.mark.bug_fix_checkout_single_product
+    def test_simple_ispu_order_logged_out(self, page, env_host = os.environ['ENV_HOST']):
+            self.ref_logger.info('Started test_simple_ispu_order_logged_out')
+    
+            ref_common = REFCommon()
+            ref_common.spoof_attentive_cookie(page)
+    
+            # 0 set up ISPU inventory for the test product
+            ispu_product = ISPUProduct(env_host)
+    
+            # 2 GO TO THE PDP AND START THE TEST
+            site_navigation = NavigationCommon()
+            site_navigation.navigate_to_pdp(page, ispu_product.pdp_url)
+    
+            # 3 ADD AN ISPU ITEM TO BAG
+            ispu_common = ISPUCommon()
+&gt;           ispu_common.add_ispu_item_to_bag(page, env_host, ispu_product)
+
+src/baseline/in_store_pickup/test_ispu_logged_out.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/common/in_store_pickup/ispu_common.py:55: in add_ispu_item_to_bag
+    pdp.add_sized_item_with_instore_pickup_to_bag(ispu_product.product['size'], test_store_zipcode, test_store_name, )
+src/common/pages/ecom/product_display_page.py:200: in add_sized_item_with_instore_pickup_to_bag
+    self.choose_ispu_store(store_location, store_name)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;src.common.pages.ecom.product_display_page.ProductDisplayPage object at 0x7fdff4ce3dd0&gt;
+store_location = '02115', store_name = 'Boston'
+
+    def choose_ispu_store(self, store_location, store_name = None):
+        self.store_location_search.fill(store_location)
+        self.find_stores_btn.click()
+    
+        #  Probably need to move this
+        self.page.wait_for_timeout(3000)
+        # make sure that at least 1 store was returned
+        # otherwise Store pick up popup displays something like this for the product:
+        #
+        # Bad news. We’re not seeing Medium Rosetta
+        # Shoulder Bag in Boss Suede and size OS available
+        # for pickup near you.
+        expect(self.page.get_by_text("Bad news.")).not_to_be_visible()
+    
+        # eg. zipcode 10012 has more than 1 store, need to be more specific for location in some cases
+        if store_name:
+            store_name_radio_button = self.page.get_by_text(store_name)
+&gt;           expect(store_name_radio_button).to_be_visible()
+E           AssertionError: Locator expected to be visible
+E           Actual value: &lt;element(s) not found&gt; 
+E           Call log:
+E           LocatorAssertions.to_be_visible with timeout 5000ms
+E             - waiting for get_by_text("Boston")
+
+src/common/pages/ecom/product_display_page.py:184: AssertionError</failure>
+        </testcase>
+        <testcase classname="src.baseline.preorder.test_preorder_logged_in.TestBaselinePreorderLoggedIn" name="test_simple_preorder_logged_in[chromium]" time="102.490" />
+        <testcase classname="src.baseline.ship_from_store.test_sfs_logged_in.TestBaselineSFSLoggedIn" name="test_simple_sfs_order_logged_in[chromium]" time="102.157" />
+        <testcase classname="src.baseline.ship_from_store.test_sfs_logged_out.TestBaselineSFSLoggedOut" name="test_simple_sfs_order_logged_out[chromium]" time="225.070">
+            <failure message="playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.&#10;Call log:&#10;waiting for get_by_role(&quot;button&quot;, name=&quot;Continue as guest&quot;)">self = &lt;test_sfs_logged_out.TestBaselineSFSLoggedOut object at 0x7fdff665d8d0&gt;
+page = &lt;Page url='https://development.thereformation.com/checkout-login?pageType=Category%20Page&amp;checkoutInitiationSource=Bag%20Widget'&gt;
+env_host = 'dev'
+
+    @pytest.mark.baseline
+    @pytest.mark.bug_fix
+    @pytest.mark.bug_fix_sfs
+    @pytest.mark.bug_fix_checkout
+    @pytest.mark.bug_fix_checkout_single_product
+    def test_simple_sfs_order_logged_out(self, page, env_host = os.environ['ENV_HOST']):
+            self.ref_logger.info('Started test_simple_sfs_order_logged_out')
+    
+            ref_common = REFCommon()
+            ref_common.spoof_attentive_cookie(page)
+    
+            # 0 set up sfs inventory for the test product
+            sfs_product = SFSProduct(env_host)
+    
+            # 1 GO TO THE PDP AND START THE TEST
+            site_navigation = NavigationCommon()
+            site_navigation.navigate_to_pdp(page, sfs_product.pdp_url)
+    
+            # 2 ADD AN sfs ITEM TO BAG
+            ref_common.add_item_to_bag(page, sfs_product.product)
+    
+            sfs_common_logged_out = SFSCommonLoggedOut()
+            # 3 OPEN THE MINICART AGAIN, GET THE BASKET_ID, LOOKUP THE BASKET VIA OCAPI, AND ASSERT THE VALUES AGAINST OUR BASKET PYTEST
+            sfs_common_logged_out.retrieve_and_assert_initial_basket_values(page, env_host)
+    
+            page.wait_for_timeout(2000)
+    
+            landing_page = LandingPage(page)
+            landing_page.view_bag()
+    
+&gt;           sfs_common_logged_out.proceed_to_checkout_and_verify_sfs_order(page, env_host, us_credentials_and_address["address"]["billing"])
+
+src/baseline/ship_from_store/test_sfs_logged_out.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/common/ship_from_store/sfs_common_logged_out.py:60: in proceed_to_checkout_and_verify_sfs_order
+    order_json = self.proceed_to_checkout_and_retrieve_final_order(page, env_host, billing_address)
+src/common/ship_from_store/sfs_common_logged_out.py:52: in proceed_to_checkout_and_retrieve_final_order
+    self.checkout_from_minicart_free_shipping(page, billing_address)
+src/common/ship_from_store/sfs_common_logged_out.py:31: in checkout_from_minicart_free_shipping
+    navigation_common.checkout_from_minicart(page, billing_address)
+src/common/navigation_common.py:92: in checkout_from_minicart
+    checkout_signin_page.continue_as_guest()
+src/common/pages/ecom/checkout_sign_in_page.py:53: in continue_as_guest
+    self.continue_as_guest_btn.click()
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/sync_api/_generated.py:15398: in click
+    self._sync(
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/_impl/_locator.py:156: in click
+    return await self._frame.click(self._selector, strict=True, **params)
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/_impl/_frame.py:488: in click
+    await self._channel.send("click", locals_to_params(locals()))
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/_impl/_connection.py:59: in send
+    return await self._connection.wrap_api_call(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl._connection.Connection object at 0x7fdff6667e90&gt;
+cb = &lt;function Channel.send.&lt;locals&gt;.&lt;lambda&gt; at 0x7fdff4a0d300&gt;
+is_internal = False
+
+    async def wrap_api_call(
+        self, cb: Callable[[], Any], is_internal: bool = False
+    ) -&gt; Any:
+        if self._api_zone.get():
+            return await cb()
+        task = asyncio.current_task(self._loop)
+        st: List[inspect.FrameInfo] = getattr(task, "__pw_stack__", inspect.stack())
+        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal)
+        self._api_zone.set(parsed_st)
+        try:
+            return await cb()
+        except Exception as error:
+&gt;           raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E           playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.
+E           Call log:
+E           waiting for get_by_role("button", name="Continue as guest")
+
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/_impl/_connection.py:520: TimeoutError</failure>
+        </testcase>
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46123_double_shipping_charges_on_SFS_shipments.test_sfs_double_ship_charge_logged_out.TestSFSDoubleShipChargeLoggedOut" name="test_sfs_double_ship_charge_logged_out[chromium]" time="180.838">
+            <failure message="playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.&#10;Call log:&#10;waiting for get_by_role(&quot;button&quot;, name=&quot;Continue as guest&quot;)">self = &lt;test_sfs_double_ship_charge_logged_out.TestSFSDoubleShipChargeLoggedOut object at 0x7fdff6521550&gt;
+page = &lt;Page url='https://development.thereformation.com/checkout-login?pageType=Home%20Page&amp;checkoutInitiationSource=Bag%20Widget'&gt;
+env_host = 'dev'
+
+    @pytest.mark.bug_fix
+    @pytest.mark.bug_fix_sfs
+    @pytest.mark.bug_fix_checkout
+    @pytest.mark.bug_fix_checkout_single_product
+    def test_sfs_double_ship_charge_logged_out(self, page, env_host = os.environ['ENV_HOST']):
+            # Steps from: https://thereformation.atlassian.net/browse/ENG-45318
+    
+            self.ref_logger.info('Started test_sfs_double_ship_charge_logged_out')
+    
+            ref_common = REFCommon()
+            ref_common.spoof_attentive_cookie(page)
+    
+            # 0 set up sfs inventory for the test product
+            sfs_product = SFSProduct(env_host)
+    
+            # 1 GO TO THE PDP AND START THE TEST
+            navigation_common = NavigationCommon()
+            navigation_common.navigate_to_pdp(page, sfs_product.pdp_url)
+    
+            ref_common.add_item_to_bag(page, sfs_product.product)
+    
+            # 2 CONTINUE TO CHECKOUT AND VERIFY THAT ONLY FREE SHIPPING SHOWS IN SHIPPING OPTIONS
+            pdp = ProductDisplayPage(page)
+            pdp.view_homepage()
+    
+            landing_page = LandingPage(page)
+            page.wait_for_timeout(2000)
+            landing_page.view_bag()
+            page.wait_for_timeout(2000)
+    
+&gt;           navigation_common.checkout_from_minicart(page, us_credentials_and_address["address"]["billing"])
+
+src/tests/ecom/bug_fixes/ENG_46123_double_shipping_charges_on_SFS_shipments/test_sfs_double_ship_charge_logged_out.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/common/navigation_common.py:92: in checkout_from_minicart
+    checkout_signin_page.continue_as_guest()
+src/common/pages/ecom/checkout_sign_in_page.py:53: in continue_as_guest
+    self.continue_as_guest_btn.click()
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/sync_api/_generated.py:15398: in click
+    self._sync(
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/_impl/_locator.py:156: in click
+    return await self._frame.click(self._selector, strict=True, **params)
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/_impl/_frame.py:488: in click
+    await self._channel.send("click", locals_to_params(locals()))
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/_impl/_connection.py:59: in send
+    return await self._connection.wrap_api_call(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl._connection.Connection object at 0x7fdff6667e90&gt;
+cb = &lt;function Channel.send.&lt;locals&gt;.&lt;lambda&gt; at 0x7fdff4b66fc0&gt;
+is_internal = False
+
+    async def wrap_api_call(
+        self, cb: Callable[[], Any], is_internal: bool = False
+    ) -&gt; Any:
+        if self._api_zone.get():
+            return await cb()
+        task = asyncio.current_task(self._loop)
+        st: List[inspect.FrameInfo] = getattr(task, "__pw_stack__", inspect.stack())
+        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal)
+        self._api_zone.set(parsed_st)
+        try:
+            return await cb()
+        except Exception as error:
+&gt;           raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E           playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.
+E           Call log:
+E           waiting for get_by_role("button", name="Continue as guest")
+
+/opt/hostedtoolcache/Python/3.11.11/x64/lib/python3.11/site-packages/playwright/_impl/_connection.py:520: TimeoutError</failure>
+        </testcase>
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_issues.TestMultipleProductTypeShipmentIssues" name="test_CEVA_and_VERNON_shipments_fix_1[chromium]" time="49.083" />
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_issues.TestMultipleProductTypeShipmentIssues" name="test_SFS_CEVA_VERNON_and_PREORDER_shipments_fix_2[chromium]" time="72.013" />
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_issues.TestMultipleProductTypeShipmentIssues" name="test_multiple_product_type_shipment_issues_logged_out[chromium]" time="0.110" />
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_regression.TestMultipleProductTypeShipmentRegression" name="test_SFS_and_VERNON_shipments_regression[chromium]" time="48.459" />
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_regression.TestMultipleProductTypeShipmentRegression" name="test_SFS_and_CEVA_shipments_regression[chromium]" time="47.509" />
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_regression.TestMultipleProductTypeShipmentRegression" name="test_SFS_and_PREORDER_shipments_regression[chromium]" time="48.449" />
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_regression.TestMultipleProductTypeShipmentRegression" name="test_CEVA_and_PREORDER_shipments_regression[chromium]" time="52.834" />
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_regression.TestMultipleProductTypeShipmentRegression" name="test_SFS_CEVA_and_PREORDER_shipments_regression[chromium]" time="59.769" />
+        <testcase classname="src.tests.ecom.bug_fixes.ENG_46127__vernon_ceva_expedited_shipping.test_vernon_ceva_preorder_sfs_shipment_regression.TestMultipleProductTypeShipmentRegression" name="test_SFS_VERNON_and_PREORDER_shipments_regression[chromium]" time="60.677" />
+        <testcase classname="src.HELLO_WORLD.test_hello_world.TestHelloWorld" name="test_hello_world_basic" time="0.101" />
+    </testsuite>
+</testsuites>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+    <testsuite name="pytest" errors="1" failures="0" skipped="0" tests="2" time="165.350" timestamp="2024-09-03T11:42:01.570393" hostname="ariccraciun.local">
+        <testcase classname="src.tests.ecom.bug_fixes.baseline.test_ispu_logged_in.TestBaselineISPULoggedIn" name="test_simple_ispu_order_logged_in[chromium]" time="99.211" />
+        <testcase classname="src.tests.ecom.bug_fixes.baseline.test_ispu_logged_out.TestBaselineISPULoggedOut" name="test_simple_ispu_order_logged_out[chromium]" time="64.737" />
+    </testsuite>
+</testsuites>

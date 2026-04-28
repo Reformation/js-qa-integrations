@@ -210,10 +210,10 @@ async function createInventoryForSku({sku, inStockQuantity, inventoryList = 'ref
     }
 }
 
-export { 
-    getInventoryLists, 
-    setupInventory, 
-    initializeAllInventoryForSku, 
-    createInventoryForSku, 
+module.exports = {
+    getInventoryLists,
+    setupInventory,
+    initializeAllInventoryForSku,
+    createInventoryForSku,
     createPreorderForSku
 };
