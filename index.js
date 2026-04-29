@@ -21,5 +21,6 @@ module.exports.SlackReport     = require('./slack/slack-report');
 
 // Legacy imports — for testing use only
 module.exports.InventoryHelper             = require('./sfcc/ocapi/data-api/util/inventory-helper');
+module.exports.OcapiDataClient             = require('./sfcc/ocapi/data-api/ocapi-data-client');
 module.exports.OcapiHelper                 = require('./sfcc/ocapi/ocapi-helper');
 module.exports.RefInventoryProductRecord   = require('./sfcc/ref-inventory-product-record');
